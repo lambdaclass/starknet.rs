@@ -1,8 +1,8 @@
 use crate::{core::errors::contract_address_errors::ContractAddressError, EntryPointType};
-use cairo_lang_starknet::{
-    contract::starknet_keccak,
-    contract_class::{ContractClass as SierraContractClass, ContractEntryPoint},
+use cairo_lang_starknet_classes::contract_class::{
+    ContractClass as SierraContractClass, ContractEntryPoint,
 };
+use cairo_lang_starknet_classes::keccak::starknet_keccak;
 use cairo_vm::Felt252;
 use serde_json::ser::Formatter;
 use starknet_crypto::{poseidon_hash_many, FieldElement, PoseidonHasher};

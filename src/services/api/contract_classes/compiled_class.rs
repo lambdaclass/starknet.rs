@@ -9,10 +9,10 @@ use crate::{ContractEntryPoint, EntryPointType};
 
 use super::deprecated_contract_class::ContractClass;
 use cairo_lang_sierra::program::Program as SierraProgram;
-use cairo_lang_starknet::abi::Contract;
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
-use cairo_lang_starknet::contract_class::{
-    ContractClass as SierraContractClass, ContractEntryPoints,
+use cairo_lang_starknet_classes::{
+    abi::Contract,
+    casm_contract_class::CasmContractClass,
+    contract_class::{ContractClass as SierraContractClass, ContractEntryPoints},
 };
 use cairo_lang_utils::bigint::BigUintAsHex;
 use cairo_vm::types::program::Program;
@@ -87,7 +87,12 @@ impl From<StarknetRsContractClass> for CompiledClass {
                     sierra_cc.extract_sierra_program().unwrap(),
                     sierra_cc.entry_points_by_type.clone(),
                 ));
-                let casm_cc = CasmContractClass::from_contract_class(sierra_cc, true).unwrap();
+
+                // TODO: from where this value must be passed? Constant?
+                let max_bytecode_size = 4_089_446;
+                let casm_cc =
+                    CasmContractClass::from_contract_class(sierra_cc, true, max_bytecode_size)
+                        .unwrap();
 
                 CompiledClass::Casm {
                     casm: Arc::new(casm_cc),

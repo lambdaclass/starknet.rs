@@ -30,7 +30,7 @@ extern crate assert_matches;
 pub use crate::services::api::contract_classes::deprecated_contract_class::{
     ContractEntryPoint, EntryPointType,
 };
-pub use cairo_lang_starknet::{
+pub use cairo_lang_starknet_classes::{
     casm_contract_class::CasmContractClass, contract_class::ContractClass,
     contract_class::ContractClass as SierraContractClass,
 };

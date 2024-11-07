@@ -32,8 +32,9 @@ use crate::{
     },
     utils::calculate_tx_resources,
 };
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
-use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
+use cairo_lang_starknet_classes::{
+    casm_contract_class::CasmContractClass, contract_class::ContractClass as SierraContractClass,
+};
 use cairo_vm::Felt252;
 use num_traits::Zero;
 use std::fmt::Debug;
@@ -440,12 +441,16 @@ impl Declare {
         &self,
         state: &mut S,
     ) -> Result<(), TransactionError> {
+        // TODO: from where this value must be passed? Constant?
+        let max_bytecode_size = 4_089_446;
+
         let casm_class = match &self.casm_class {
             None => CasmContractClass::from_contract_class(
                 self.sierra_contract_class
                     .clone()
                     .ok_or(TransactionError::DeclareNoSierraOrCasm)?,
                 true,
+                max_bytecode_size,
             )
             .map_err(|e| TransactionError::SierraCompileError(e.to_string()))?,
             Some(casm_contract_class) => casm_contract_class.clone(),
@@ -612,7 +617,7 @@ mod tests {
         },
         transaction::{Address, ClassHash},
     };
-    use cairo_lang_starknet::casm_contract_class::CasmContractClass;
+    use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
     use cairo_vm::Felt252;
 
     use std::{fs::File, io::BufReader, path::PathBuf, sync::Arc};

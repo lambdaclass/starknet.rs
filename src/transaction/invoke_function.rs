@@ -659,7 +659,7 @@ mod tests {
         transaction::ClassHash,
         utils::calculate_sn_keccak,
     };
-    use cairo_lang_starknet::casm_contract_class::CasmContractClass;
+    use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
 
     use pretty_assertions_sorted::{assert_eq, assert_eq_sorted};
     use starknet_api::{
