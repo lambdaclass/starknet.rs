@@ -521,7 +521,7 @@ impl Declare {
                 block_context,
                 resources_manager,
                 &mut tx_execution_context,
-                true,
+                false,
                 block_context.validate_max_n_steps,
                 #[cfg(feature = "cairo-native")]
                 program_cache,
