@@ -10,6 +10,7 @@ pub mod increase_balance;
 pub mod internal_calls;
 pub mod internals;
 pub mod multi_syscall_test;
+pub mod secp;
 pub mod storage;
 pub mod syscalls;
 pub mod syscalls_errors;

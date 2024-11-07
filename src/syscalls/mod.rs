@@ -7,6 +7,7 @@ pub mod hint_code;
 #[cfg(feature = "cairo-native")]
 pub mod native_syscall_handler;
 pub mod other_syscalls;
+pub mod secp_syscall_handler;
 pub mod syscall_handler;
 pub mod syscall_handler_errors;
 pub mod syscall_info;

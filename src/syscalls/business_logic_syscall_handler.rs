@@ -4,7 +4,8 @@ use super::{
     syscall_request::{
         CallContractRequest, DeployRequest, EmitEventRequest, FromPtr, GetBlockHashRequest,
         GetBlockTimestampRequest, KeccakRequest, LibraryCallRequest, ReplaceClassRequest,
-        SendMessageToL1Request, StorageReadRequest, StorageWriteRequest, SyscallRequest,
+        SecpAddRequest, SendMessageToL1Request, StorageReadRequest, StorageWriteRequest,
+        SyscallRequest,
     },
     syscall_response::{
         CallContractResponse, DeployResponse, FailureReason, GetBlockHashResponse,
@@ -40,7 +41,7 @@ use crate::{
         BlockInfo, ExecutionResourcesManager,
     },
     transaction::{error::TransactionError, Address, ClassHash},
-    utils::{calculate_sn_keccak, felt_to_hash, get_big_int, get_felt_range},
+    utils::{felt_to_hash, get_big_int, get_felt_range},
 };
 use cairo_vm::Felt252;
 use cairo_vm::{
@@ -63,11 +64,19 @@ use {
     std::{cell::RefCell, rc::Rc},
 };
 
-pub(crate) const STEP: u128 = 100;
-pub(crate) const SYSCALL_BASE: u128 = 100 * STEP;
-pub(crate) const KECCAK_ROUND_COST: u128 = 180000;
-
 lazy_static! {
+    static ref SYSCALLS: Vec<String> = Vec::from([
+        "emit_event".to_string(),
+        "deploy".to_string(),
+        "get_tx_info".to_string(),
+        "send_message_to_l1".to_string(),
+        "library_call".to_string(),
+        "get_caller_address".to_string(),
+        "get_contract_address".to_string(),
+        "get_sequencer_address".to_string(),
+        "get_block_timestamp".to_string(),
+    ]);
+
     /// Felt->syscall map that was extracted from new_syscalls.json (Cairo 1.0 syscalls)
     static ref SELECTOR_TO_SYSCALL: HashMap<Felt252, &'static str> = {
             let mut map: HashMap<Felt252, &'static str> = HashMap::with_capacity(9);
@@ -88,10 +97,27 @@ lazy_static! {
             map.insert(75202468540281_u128.into(), "deploy");
             map.insert(1280709301550335749748_u128.into(), "emit_event");
             map.insert(25828017502874050592466629733_u128.into(), "storage_write");
-            map.insert(Felt252::from_bytes_be(&calculate_sn_keccak("get_block_timestamp".as_bytes())), "get_block_timestamp");
-            map.insert(Felt252::from_bytes_be(&calculate_sn_keccak("get_block_number".as_bytes())), "get_block_number");
+            map.insert(Felt252::from_bytes_be_slice("get_block_timestamp".as_bytes()), "get_block_timestamp");
+            map.insert(Felt252::from_bytes_be_slice("get_block_number".as_bytes()), "get_block_number");
             map.insert(Felt252::from_bytes_be_slice("Keccak".as_bytes()), "keccak");
 
+            // SECP256k1 syscalls
+            let secp_syscalls = [
+                ("Secp256k1New", "secp256k1_new"),
+                ("Secp256k1Add", "secp256k1_add"),
+                ("Secp256k1Mul", "secp256k1_mul"),
+                ("Secp256k1GetPointFromX", "secp256k1_get_point_from_x"),
+                ("Secp256k1GetXy", "secp256k1_get_xy"),
+                ("Secp256r1New", "secp256r1_new"),
+                ("Secp256r1Add", "secp256r1_add"),
+                ("Secp256r1Mul", "secp256r1_mul"),
+                ("Secp256r1GetPointFromX", "secp256r1_get_point_from_x"),
+                ("Secp256r1GetXy", "secp256r1_get_xy")
+            ];
+
+            for (syscall, syscall_name) in secp_syscalls {
+                map.insert(Felt252::from_bytes_be_slice(syscall.as_bytes()), syscall_name);
+            }
             map
     };
 
@@ -121,6 +147,20 @@ lazy_static! {
         map.insert("get_block_timestamp", 0);
         map.insert("keccak", 0);
         map.insert("get_block_hash", SYSCALL_BASE + 50 * STEP);
+
+        // Secp256k1
+        map.insert("secp256k1_add", 406 * STEP + 29 * RANGE_CHECK);
+        map.insert("secp256k1_get_point_from_x", 391 * STEP + 30 * RANGE_CHECK + 20 * MEMORY_HOLE);
+        map.insert("secp256k1_get_xy", 239 * STEP + 11 * RANGE_CHECK + 40 * MEMORY_HOLE);
+        map.insert("secp256k1_mul", 76501 * STEP + 7045 * RANGE_CHECK + 2 * MEMORY_HOLE);
+        map.insert("secp256k1_new", 475 * STEP + 35 * RANGE_CHECK + 40 * MEMORY_HOLE);
+
+        // Secp256r1
+        map.insert("secp256r1_add", 589 * STEP + 57 * RANGE_CHECK);
+        map.insert("secp256r1_get_point_from_x", 510 * STEP + 44 * RANGE_CHECK + 20 * MEMORY_HOLE);
+        map.insert("secp256r1_get_xy", 241 * STEP + 11 * RANGE_CHECK + 40 * MEMORY_HOLE);
+        map.insert("secp256r1_mul", 125340 * STEP + 13961 * RANGE_CHECK + 2 * MEMORY_HOLE);
+        map.insert("secp256r1_new", 594 * STEP + 49 * RANGE_CHECK + 40 * MEMORY_HOLE);
 
         map
     };
@@ -218,30 +258,11 @@ impl<'a, S: StateReader, C: ContractClassCache> BusinessLogicSyscallHandler<'a, 
         _contract_address: Address,
         state: &'a mut CachedState<S, C>,
     ) -> Self {
-        let syscalls = Vec::from([
-            // Emits an event with a given set of keys and data.
-            "emit_event".to_string(),
-            // Deploys a new instance of a previously declared class.
-            "deploy".to_string(),
-            // Gets information about the original transaction.
-            "get_tx_info".to_string(),
-            // Sends a message to L1.
-            "send_message_to_l1".to_string(),
-            // Calls the requested function in any previously declared class.
-            "library_call".to_string(),
-            // Returns the address of the calling contract, or 0 if the call was not initiated by another contract.
-            "get_caller_address".to_string(),
-            // Gets the address of the contract who raised the system call.
-            "get_contract_address".to_string(),
-            // Returns the address of the sequencer that generated the current block.
-            "get_sequencer_address".to_string(),
-            // Gets the timestamp of the block in which the transaction is executed.
-            "get_block_timestamp".to_string(),
-        ]);
         let events = Vec::new();
         let tx_execution_context = Default::default();
         let read_only_segments = Vec::new();
-        let resources_manager = ExecutionResourcesManager::new(syscalls, Default::default());
+        let resources_manager =
+            ExecutionResourcesManager::new(SYSCALLS.clone(), Default::default());
         let contract_address = Address(1.into());
         let caller_address = Address(0.into());
         let l2_to_l1_messages = Vec::new();
@@ -1079,6 +1100,17 @@ impl<'a, S: StateReader, C: ContractClassCache> BusinessLogicSyscallHandler<'a, 
             "send_message_to_l1" => SendMessageToL1Request::from_ptr(vm, syscall_ptr),
             "replace_class" => ReplaceClassRequest::from_ptr(vm, syscall_ptr),
             "keccak" => KeccakRequest::from_ptr(vm, syscall_ptr),
+            "secp256k1_add" => SecpAddRequest::from_ptr(vm, syscall_ptr),
+            "secp256r1_add" => SecpAddRequest::from_ptr(vm, syscall_ptr),
+            // "secp256k1_get_point_from_x" => Secp256,
+            // "secp256k1_get_xy".to_string(),
+            // "secp256k1_get_xy".to_string(),
+            // "secp256k1_mul".to_string(),
+            // "secp256k1_new".to_string(),
+            // "secp256r1_get_point_from_x".to_string(),
+            // "secp256r1_get_xy".to_string(),
+            // "secp256r1_mul".to_string(),
+            // "secp256r1_new".to_string(),
             _ => Err(SyscallHandlerError::UnknownSyscall(
                 syscall_name.to_string(),
             )),
