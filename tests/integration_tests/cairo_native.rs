@@ -3,7 +3,10 @@
 use assert_matches::assert_matches;
 use cairo_vm::Felt252;
 use pretty_assertions_sorted::*;
+use starknet_in_rust::definitions::block_context::StarknetOsConfig;
+use starknet_in_rust::execution::TransactionExecutionInfo;
 use starknet_in_rust::hash_utils::calculate_contract_address;
+use starknet_in_rust::transaction::Transaction;
 use starknet_in_rust::{
     definitions::{block_context::BlockContext, constants::TRANSACTION_VERSION},
     execution::{
@@ -828,7 +831,7 @@ fn get_execution_info_test() {
 }
 
 #[derive(Debug, Default)]
-struct TestStateSetup {
+pub struct TestStateSetup {
     state_reader: InMemoryStateReader,
 
     cache_native: PermanentContractClassCache,
@@ -900,17 +903,42 @@ impl TestStateSetup {
         TestState {
             state_vm: CachedState::new(state_reader.clone(), Arc::new(self.cache_vm)),
             state_native: CachedState::new(state_reader, Arc::new(self.cache_native)),
+
+            starknet_os_config: Default::default(),
+        }
+    }
+
+    pub fn finalize_with_starknet_os_config(
+        self,
+        starknet_os_config: StarknetOsConfig,
+    ) -> TestState {
+        let state_reader = Arc::new(self.state_reader);
+
+        TestState {
+            state_vm: CachedState::new(state_reader.clone(), Arc::new(self.cache_vm)),
+            state_native: CachedState::new(state_reader, Arc::new(self.cache_native)),
+
+            starknet_os_config,
         }
     }
 }
 
 #[derive(Debug)]
-struct TestState {
+pub struct TestState {
     state_native: CachedState<InMemoryStateReader, PermanentContractClassCache>,
     state_vm: CachedState<InMemoryStateReader, PermanentContractClassCache>,
+
+    starknet_os_config: StarknetOsConfig,
 }
 
 impl TestState {
+    pub fn storage_writes_at(&self, k: (Address, [u8; 32])) -> (Option<Felt252>, Option<Felt252>) {
+        (
+            self.state_vm.cache().storage_writes().get(&k).cloned(),
+            self.state_native.cache().storage_writes().get(&k).cloned(),
+        )
+    }
+
     pub fn insert_initial_storage_value(&mut self, k: (Address, [u8; 32]), v: Felt252) {
         self.state_native
             .cache_mut()
@@ -1019,6 +1047,41 @@ impl TestState {
         )?;
 
         Ok((execution_result_vm, execution_result_native))
+    }
+
+    pub fn execute_transaction(
+        &mut self,
+        tx: Transaction,
+    ) -> Result<TransactionExecutionInfo, Box<dyn std::error::Error>> {
+        let (_, contract_class_native) =
+            Self::get_contract_class_for_address(&self.state_native, &tx.contract_address())
+                .ok_or("The contract address doesn't exist.")?;
+
+        assert_matches!(
+            contract_class_native,
+            CompiledClass::Casm {
+                sierra: Some(_),
+                ..
+            },
+            "The Native contract class doesn't contain the Sierra."
+        );
+
+        let mut block_context = BlockContext::default();
+        block_context.block_info_mut().block_number = 30;
+        let context = block_context.starknet_os_config_mut();
+        *context = self.starknet_os_config.clone();
+
+        let execution_result_native = tx
+            .execute(
+                &mut self.state_native,
+                &block_context,
+                u128::MAX,
+                #[cfg(feature = "cairo-native")]
+                None,
+            )
+            .unwrap();
+
+        Ok(execution_result_native)
     }
 
     fn get_contract_class_for_address(

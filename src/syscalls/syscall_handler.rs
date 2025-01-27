@@ -44,7 +44,7 @@ impl<'a, S: StateReader, C: ContractClassCache> SyscallHintProcessor<'a, S, C> {
         run_resources: RunResources,
     ) -> Self {
         SyscallHintProcessor {
-            cairo1_hint_processor: Cairo1HintProcessor::new(hints, run_resources.clone()),
+            cairo1_hint_processor: Cairo1HintProcessor::new(hints, run_resources.clone(), false),
             syscall_handler,
             run_resources,
         }

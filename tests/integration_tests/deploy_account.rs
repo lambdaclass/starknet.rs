@@ -1,3 +1,4 @@
+use cairo_vm::types::builtin_name::BuiltinName;
 use cairo_vm::{vm::runners::cairo_runner::ExecutionResources, Felt252};
 use lazy_static::lazy_static;
 use pretty_assertions_sorted::assert_eq;
@@ -231,10 +232,9 @@ fn internal_deploy_account_cairo1() {
                     n_memory_holes: 2,
                     builtin_instance_counter:
                     [
-                    ("range_check_builtin", 2),
+                    (BuiltinName::range_check, 2),
                     ]
                 .into_iter()
-                .map(|(k, v)| (k.to_string(), v))
                 .collect(),
             }),
 
@@ -257,10 +257,9 @@ fn internal_deploy_account_cairo1() {
                     n_memory_holes: 0,
                     builtin_instance_counter:
                     [
-                        ("range_check_builtin", 2),
+                        (BuiltinName::range_check, 2),
                     ]
                 .into_iter()
-                .map(|(k, v)| (k.to_string(), v))
                 .collect(),
             }),
                 ..Default::default()

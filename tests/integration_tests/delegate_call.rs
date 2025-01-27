@@ -59,7 +59,7 @@ fn delegate_call() {
     let test_delegate_call_selector = *entry_points_by_type
         .get(&EntryPointType::External)
         .unwrap()
-        .get(0)
+        .first()
         .unwrap()
         .selector();
 

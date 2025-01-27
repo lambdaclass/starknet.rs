@@ -32,8 +32,8 @@ use crate::{
     },
     utils::calculate_tx_resources,
 };
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
-use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::contract_class::ContractClass as SierraContractClass;
 use cairo_vm::Felt252;
 use num_traits::Zero;
 use std::fmt::Debug;
@@ -446,6 +446,7 @@ impl Declare {
                     .clone()
                     .ok_or(TransactionError::DeclareNoSierraOrCasm)?,
                 true,
+                usize::MAX, // todo check if usize MAX is good here
             )
             .map_err(|e| TransactionError::SierraCompileError(e.to_string()))?,
             Some(casm_contract_class) => casm_contract_class.clone(),
@@ -545,7 +546,7 @@ impl Declare {
             if !execution_result
                 .call_info
                 .as_ref()
-                .map(|ci| ci.retdata == vec![*VALIDATE_RETDATA])
+                .map(|ci| &ci.retdata == &vec![*VALIDATE_RETDATA])
                 .unwrap_or_default()
             {
                 return Err(TransactionError::WrongValidateRetdata);
@@ -612,7 +613,7 @@ mod tests {
         },
         transaction::{Address, ClassHash},
     };
-    use cairo_lang_starknet::casm_contract_class::CasmContractClass;
+    use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
     use cairo_vm::Felt252;
 
     use std::{fs::File, io::BufReader, path::PathBuf, sync::Arc};
@@ -625,11 +626,12 @@ mod tests {
 
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
         let sender_address = Address(1.into());
         let casm_class =
-            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+                .unwrap();
         let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
         // create declare
@@ -659,6 +661,7 @@ mod tests {
         let expected_casm_class = CasmContractClass::from_contract_class(
             declare.sierra_contract_class.unwrap().clone(),
             true,
+            usize::MAX,
         )
         .unwrap();
         let declare_compiled_class_hash = ClassHash::from(declare.compiled_class_hash);
@@ -681,11 +684,12 @@ mod tests {
 
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
         let sender_address = Address(1.into());
         let casm_class =
-            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+                .unwrap();
         let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
         // create declare
@@ -712,9 +716,12 @@ mod tests {
         assert!(declare.compile_and_store_casm_class(&mut state).is_ok());
 
         // test we  can retreive the data
-        let expected_casm_class =
-            CasmContractClass::from_contract_class(declare.sierra_contract_class.unwrap(), true)
-                .unwrap();
+        let expected_casm_class = CasmContractClass::from_contract_class(
+            declare.sierra_contract_class.unwrap(),
+            true,
+            usize::MAX,
+        )
+        .unwrap();
         let declare_compiled_class_hash = ClassHash::from(declare.compiled_class_hash);
         let casm_class = match state
             .get_contract_class(&declare_compiled_class_hash)
@@ -735,12 +742,13 @@ mod tests {
 
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
         let sierra_class_hash = compute_sierra_class_hash(&sierra_contract_class).unwrap();
         let sender_address = Address(1.into());
         let casm_class =
-            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+                .unwrap();
         let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
         // create declare tx
@@ -768,9 +776,12 @@ mod tests {
         assert!(declare.compile_and_store_casm_class(&mut state).is_ok());
 
         // test we  can retreive the data
-        let expected_casm_class =
-            CasmContractClass::from_contract_class(declare.sierra_contract_class.unwrap(), true)
-                .unwrap();
+        let expected_casm_class = CasmContractClass::from_contract_class(
+            declare.sierra_contract_class.unwrap(),
+            true,
+            usize::MAX,
+        )
+        .unwrap();
         let declare_compiled_class_hash = ClassHash::from(declare.compiled_class_hash);
         let casm_class = match state
             .get_contract_class(&declare_compiled_class_hash)
@@ -791,11 +802,12 @@ mod tests {
 
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
         let sender_address = Address(1.into());
         let casm_class =
-            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+                .unwrap();
         let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
         // create declare tx
@@ -825,6 +837,7 @@ mod tests {
         let expected_casm_class = CasmContractClass::from_contract_class(
             declare.sierra_contract_class.unwrap().clone(),
             true,
+            usize::MAX,
         )
         .unwrap();
         let declare_compiled_class_hash = ClassHash::from(declare.compiled_class_hash);
@@ -847,11 +860,12 @@ mod tests {
 
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
         let sender_address = Address(1.into());
         let casm_class =
-            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+            CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+                .unwrap();
         let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
         let sended_class_hash = Felt252::from(5);
@@ -893,7 +907,7 @@ mod tests {
         let path = PathBuf::from("starknet_programs/cairo2/fibonacci.sierra");
         let file = File::open(path).unwrap();
         let reader = BufReader::new(file);
-        let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+        let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
             serde_json::from_reader(reader).unwrap();
 
         let chain_id = StarknetChainId::TestNet.to_felt();

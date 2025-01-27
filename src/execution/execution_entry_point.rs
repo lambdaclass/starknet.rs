@@ -27,17 +27,17 @@ use crate::{
     },
 };
 use cairo_lang_sierra::program::Program as SierraProgram;
-use cairo_lang_starknet::casm_contract_class::{CasmContractClass, CasmContractEntryPoint};
-use cairo_lang_starknet::contract_class::ContractEntryPoints;
+use cairo_lang_starknet_classes::casm_contract_class::{CasmContractClass, CasmContractEntryPoint};
+use cairo_lang_starknet_classes::contract_class::ContractEntryPoints;
 use cairo_vm::{
     types::{
+        layout_name::LayoutName,
         program::Program,
         relocatable::{MaybeRelocatable, Relocatable},
     },
     vm::{
         errors::runner_errors::RunnerError,
         runners::cairo_runner::{CairoArg, CairoRunner, ExecutionResources, RunResources},
-        vm_core::VirtualMachine,
     },
     Felt252,
 };
@@ -138,6 +138,7 @@ impl ExecutionEntryPoint {
 
         match contract_class {
             CompiledClass::Deprecated(contract_class) => {
+                dbg!("deprecated");
                 let call_info = self._execute_version0_class(
                     state,
                     resources_manager,
@@ -418,9 +419,9 @@ impl ExecutionEntryPoint {
         let entry_point = self.get_selected_entry_point_v0(&contract_class, class_hash)?;
 
         // create starknet runner
-        let mut vm = VirtualMachine::new(false);
-        let mut cairo_runner = CairoRunner::new(&contract_class.program, "starknet", false)?;
-        cairo_runner.initialize_function_runner(&mut vm)?;
+        let mut cairo_runner =
+            CairoRunner::new(&contract_class.program, LayoutName::starknet, false, false)?;
+        cairo_runner.initialize_function_runner()?;
 
         validate_contract_deployed(state, &self.contract_address)?;
 
@@ -428,12 +429,11 @@ impl ExecutionEntryPoint {
         //let os_context = runner.prepare_os_context();
         let os_context =
             StarknetRunner::<DeprecatedSyscallHintProcessor<S, C>>::prepare_os_context_cairo0(
-                &cairo_runner,
-                &mut vm,
+                &mut cairo_runner,
             );
 
         // fetch syscall_ptr
-        let initial_syscall_ptr: Relocatable = match os_context.get(0) {
+        let initial_syscall_ptr: Relocatable = match os_context.first() {
             Some(MaybeRelocatable::RelocatableValue(ptr)) => ptr.to_owned(),
             _ => return Err(TransactionError::NotARelocatableValue),
         };
@@ -449,14 +449,14 @@ impl ExecutionEntryPoint {
         );
         let hint_processor =
             DeprecatedSyscallHintProcessor::new(syscall_handler, RunResources::default());
-        let mut runner = StarknetRunner::new(cairo_runner, vm, hint_processor);
+        let mut runner = StarknetRunner::new(cairo_runner, hint_processor);
 
         // Positional arguments are passed to *args in the 'run_from_entrypoint' function.
         let data: Vec<MaybeRelocatable> = self.calldata.iter().map(|d| d.into()).collect();
         let alloc_pointer = runner
             .hint_processor
             .syscall_handler
-            .allocate_segment(&mut runner.vm, data)?
+            .allocate_segment(&mut runner.cairo_runner.vm, data)?
             .into();
 
         let entry_point_args = [
@@ -478,6 +478,7 @@ impl ExecutionEntryPoint {
             - (entry_point_args.len() + 2))?;
 
         runner
+            .cairo_runner
             .vm
             .mark_address_range_as_accessed(args_ptr, entry_point_args.len())?;
 
@@ -526,21 +527,17 @@ impl ExecutionEntryPoint {
         let entry_point = self.get_selected_entry_point(&contract_class, class_hash)?;
 
         // create starknet runner
-        let mut vm = VirtualMachine::new(false);
         // get a program from the casm contract class
         let program: Program = contract_class.as_ref().clone().try_into()?;
         // create and initialize a cairo runner for running cairo 1 programs.
-        let mut cairo_runner = CairoRunner::new(&program, "starknet", false)?;
+        let mut cairo_runner = CairoRunner::new(&program, LayoutName::starknet, false, false)?;
 
-        cairo_runner.initialize_function_runner_cairo_1(
-            &mut vm,
-            &parse_builtin_names(&entry_point.builtins)?,
-        )?;
+        cairo_runner
+            .initialize_function_runner_cairo_1(&parse_builtin_names(&entry_point.builtins)?)?;
         validate_contract_deployed(state, &self.contract_address)?;
         // prepare OS context
         let os_context = StarknetRunner::<SyscallHintProcessor<S, C>>::prepare_os_context_cairo1(
-            &cairo_runner,
-            &mut vm,
+            &mut cairo_runner,
             self.initial_gas.into(),
         );
 
@@ -567,7 +564,7 @@ impl ExecutionEntryPoint {
             &contract_class.hints,
             RunResources::default(),
         );
-        let mut runner = StarknetRunner::new(cairo_runner, vm, hint_processor);
+        let mut runner = StarknetRunner::new(cairo_runner, hint_processor);
 
         // Load builtin costs
         let builtin_costs: Vec<MaybeRelocatable> =
@@ -575,7 +572,7 @@ impl ExecutionEntryPoint {
         let builtin_costs_ptr: MaybeRelocatable = runner
             .hint_processor
             .syscall_handler
-            .allocate_segment(&mut runner.vm, builtin_costs)?
+            .allocate_segment(&mut runner.cairo_runner.vm, builtin_costs)?
             .into();
 
         // Load extra data
@@ -587,6 +584,7 @@ impl ExecutionEntryPoint {
         let program_extra_data: Vec<MaybeRelocatable> =
             vec![0x208B7FFF7FFF7FFE.into(), builtin_costs_ptr];
         runner
+            .cairo_runner
             .vm
             .load_data(core_program_end_ptr, &program_extra_data)?;
 
@@ -595,7 +593,7 @@ impl ExecutionEntryPoint {
         let alloc_pointer: MaybeRelocatable = runner
             .hint_processor
             .syscall_handler
-            .allocate_segment(&mut runner.vm, data)?
+            .allocate_segment(&mut runner.cairo_runner.vm, data)?
             .into();
 
         let mut entrypoint_args: Vec<CairoArg> = os_context
@@ -617,6 +615,7 @@ impl ExecutionEntryPoint {
         )?;
 
         runner
+            .cairo_runner
             .vm
             .mark_address_range_as_accessed(core_program_end_ptr, program_extra_data.len())?;
 
@@ -631,6 +630,7 @@ impl ExecutionEntryPoint {
         let args_ptr = (initial_fp - (entrypoint_args.len() + 2))?;
 
         runner
+            .cairo_runner
             .vm
             .mark_address_range_as_accessed(args_ptr, entrypoint_args.len())?;
 
@@ -687,9 +687,7 @@ impl ExecutionEntryPoint {
         class_hash: &ClassHash,
         program_cache: Rc<RefCell<ProgramCache<'_, ClassHash>>>,
     ) -> Result<CallInfo, TransactionError> {
-        use cairo_native::{
-            executor::NativeExecutor, metadata::syscall_handler::SyscallHandlerMeta,
-        };
+        use cairo_native::executor::NativeExecutor;
 
         use crate::{
             syscalls::{
@@ -757,13 +755,13 @@ impl ExecutionEntryPoint {
             resources_manager: Default::default(),
         };
 
-        let syscall_meta = SyscallHandlerMeta::new(&mut syscall_handler);
-
         let entry_point_fn = &sierra_program
             .funcs
             .iter()
             .find(|x| x.id.id == (entry_point.function_idx as u64))
             .unwrap();
+
+        std::fs::write("hello.sierra", sierra_program.to_string()).unwrap();
 
         let entry_point_id = &entry_point_fn.id;
 
@@ -772,13 +770,13 @@ impl ExecutionEntryPoint {
                 entry_point_id,
                 &self.calldata,
                 Some(self.initial_gas),
-                Some(&syscall_meta),
+                &mut syscall_handler,
             ),
             NativeExecutor::Jit(executor) => executor.invoke_contract_dynamic(
                 entry_point_id,
                 &self.calldata,
                 Some(self.initial_gas),
-                Some(&syscall_meta),
+                &mut syscall_handler,
             ),
         }
         .map_err(|e| TransactionError::CustomError(format!("cairo-native error: {:?}", e)))?;

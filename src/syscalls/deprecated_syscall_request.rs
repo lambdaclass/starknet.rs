@@ -145,16 +145,6 @@ pub(crate) struct DeprecatedReplaceClassRequest {
     pub(crate) class_hash: Felt252,
 }
 
-/// Struct representing a deprecated delegate call request.
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) struct DeprecatedDelegateCallRequest {
-    pub(crate) selector: Felt252,
-    pub(crate) contract_address: Address,
-    pub(crate) function_selector: Felt252,
-    pub(crate) calldata_size: usize,
-    pub(crate) calldata: Relocatable,
-}
-
 /// Implementation of a converter from different types to  DeprecatedSyscallRequest
 impl From<DeprecatedEmitEventRequest> for DeprecatedSyscallRequest {
     fn from(emit_event_struct: DeprecatedEmitEventRequest) -> DeprecatedSyscallRequest {
@@ -261,10 +251,10 @@ impl DeprecatedFromPtr for DeprecatedEmitEventRequest {
         syscall_ptr: Relocatable,
     ) -> Result<DeprecatedSyscallRequest, SyscallHandlerError> {
         let selector = get_big_int(vm, syscall_ptr)?;
-        let keys_len = get_integer(vm, &syscall_ptr + 1)?;
-        let keys = get_relocatable(vm, &syscall_ptr + 2)?;
-        let data_len = get_integer(vm, &syscall_ptr + 3)?;
-        let data = get_relocatable(vm, &syscall_ptr + 4)?;
+        let keys_len = get_integer(vm, (syscall_ptr + 1)?)?;
+        let keys = get_relocatable(vm, (syscall_ptr + 2)?)?;
+        let data_len = get_integer(vm, (syscall_ptr + 3)?)?;
+        let data = get_relocatable(vm, (syscall_ptr + 4)?)?;
 
         Ok(DeprecatedEmitEventRequest {
             selector,
@@ -294,10 +284,10 @@ impl DeprecatedFromPtr for DeprecatedLibraryCallRequest {
         syscall_ptr: Relocatable,
     ) -> Result<DeprecatedSyscallRequest, SyscallHandlerError> {
         let selector = get_big_int(vm, syscall_ptr)?;
-        let class_hash = get_big_int(vm, &syscall_ptr + 1)?;
-        let function_selector = get_big_int(vm, &syscall_ptr + 2)?;
-        let calldata_size = get_integer(vm, &syscall_ptr + 3)?;
-        let calldata = get_relocatable(vm, &syscall_ptr + 4)?;
+        let class_hash = get_big_int(vm, (syscall_ptr + 1)?)?;
+        let function_selector = get_big_int(vm, (syscall_ptr + 2)?)?;
+        let calldata_size = get_integer(vm, (syscall_ptr + 3)?)?;
+        let calldata = get_relocatable(vm, (syscall_ptr + 4)?)?;
         Ok(DeprecatedLibraryCallRequest {
             selector,
             class_hash,
@@ -315,10 +305,10 @@ impl DeprecatedFromPtr for DeprecatedCallContractRequest {
         syscall_ptr: Relocatable,
     ) -> Result<DeprecatedSyscallRequest, SyscallHandlerError> {
         let selector = get_big_int(vm, syscall_ptr)?;
-        let contract_address = Address(get_big_int(vm, &syscall_ptr + 1)?);
-        let function_selector = get_big_int(vm, &syscall_ptr + 2)?;
-        let calldata_size = get_integer(vm, &syscall_ptr + 3)?;
-        let calldata = get_relocatable(vm, &syscall_ptr + 4)?;
+        let contract_address = Address(get_big_int(vm, (syscall_ptr + 1)?)?);
+        let function_selector = get_big_int(vm, (syscall_ptr + 2)?)?;
+        let calldata_size = get_integer(vm, (syscall_ptr + 3)?)?;
+        let calldata = get_relocatable(vm, (syscall_ptr + 4)?)?;
         Ok(DeprecatedCallContractRequest {
             selector,
             contract_address,
@@ -337,11 +327,11 @@ impl DeprecatedFromPtr for DeprecatedDeployRequest {
     ) -> Result<DeprecatedSyscallRequest, SyscallHandlerError> {
         // Get syscall parameters from the Virtual Machine
         let _selector = get_big_int(vm, syscall_ptr)?;
-        let class_hash = get_big_int(vm, &syscall_ptr + 1)?;
-        let contract_address_salt = get_big_int(vm, &syscall_ptr + 2)?;
-        let constructor_calldata_size = get_big_int(vm, &syscall_ptr + 3)?;
-        let constructor_calldata = get_relocatable(vm, &syscall_ptr + 4)?;
-        let deploy_from_zero = get_integer(vm, &syscall_ptr + 5)?;
+        let class_hash = get_big_int(vm, (syscall_ptr + 1)?)?;
+        let contract_address_salt = get_big_int(vm, (syscall_ptr + 2)?)?;
+        let constructor_calldata_size = get_big_int(vm, (syscall_ptr + 3)?)?;
+        let constructor_calldata = get_relocatable(vm, (syscall_ptr + 4)?)?;
+        let deploy_from_zero = get_integer(vm, (syscall_ptr + 5)?)?;
 
         Ok(DeprecatedSyscallRequest::Deploy(DeprecatedDeployRequest {
             _selector,
@@ -360,9 +350,9 @@ impl DeprecatedFromPtr for DeprecatedSendMessageToL1SysCallRequest {
         syscall_ptr: Relocatable,
     ) -> Result<DeprecatedSyscallRequest, SyscallHandlerError> {
         let _selector = get_big_int(vm, syscall_ptr)?;
-        let to_address = Address(get_big_int(vm, &syscall_ptr + 1)?);
-        let payload_size = get_integer(vm, &syscall_ptr + 2)?;
-        let payload_ptr = get_relocatable(vm, &syscall_ptr + 3)?;
+        let to_address = Address(get_big_int(vm, (syscall_ptr + 1)?)?);
+        let payload_size = get_integer(vm, (syscall_ptr + 2)?)?;
+        let payload_ptr = get_relocatable(vm, (syscall_ptr + 3)?)?;
 
         Ok(DeprecatedSyscallRequest::SendMessageToL1(
             DeprecatedSendMessageToL1SysCallRequest {

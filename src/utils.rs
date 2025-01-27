@@ -12,8 +12,8 @@ use crate::{
     syscalls::syscall_handler_errors::SyscallHandlerError,
     transaction::error::TransactionError,
 };
-use cairo_vm::vm::runners::builtin_runner::SEGMENT_ARENA_BUILTIN_NAME;
-use cairo_vm::{serde::deserialize_program::BuiltinName, vm::runners::builtin_runner, Felt252};
+use cairo_vm::types::builtin_name::BuiltinName;
+use cairo_vm::Felt252;
 use cairo_vm::{types::relocatable::Relocatable, vm::vm_core::VirtualMachine};
 use num_traits::ToPrimitive;
 use serde_json::Value;
@@ -122,12 +122,7 @@ pub fn field_element_to_felt(felt: &FieldElement) -> Felt252 {
 }
 
 pub fn felt_to_hash(value: &Felt252) -> ClassHash {
-    let mut output = [0; 32];
-
-    let bytes = value.to_bytes_be();
-    output[32 - bytes.len()..].copy_from_slice(&bytes);
-
-    ClassHash(output)
+    ClassHash(value.to_bytes_be())
 }
 
 pub fn string_to_hash(class_string: &str) -> ClassHash {
@@ -202,7 +197,7 @@ pub fn calculate_tx_resources(
         + n_reverted_steps
         + 10 * filtered_builtins
             .builtin_instance_counter
-            .remove(SEGMENT_ARENA_BUILTIN_NAME)
+            .remove(&BuiltinName::segment_arena)
             .unwrap_or(0);
 
     let mut resources: HashMap<String, usize> = HashMap::new();
@@ -212,7 +207,7 @@ pub fn calculate_tx_resources(
         n_steps + filtered_builtins.n_memory_holes,
     );
     for (builtin, value) in filtered_builtins.builtin_instance_counter {
-        resources.insert(builtin, value);
+        resources.insert(builtin.to_str_with_suffix().to_string(), value);
     }
 
     Ok(resources)
@@ -396,18 +391,9 @@ pub(crate) fn parse_builtin_names(
 ) -> Result<Vec<BuiltinName>, TransactionError> {
     builtin_strings
         .iter()
-        .map(|n| format!("{n}_builtin"))
-        .map(|s| match &*s {
-            builtin_runner::OUTPUT_BUILTIN_NAME => Ok(BuiltinName::output),
-            builtin_runner::RANGE_CHECK_BUILTIN_NAME => Ok(BuiltinName::range_check),
-            builtin_runner::HASH_BUILTIN_NAME => Ok(BuiltinName::pedersen),
-            builtin_runner::SIGNATURE_BUILTIN_NAME => Ok(BuiltinName::ecdsa),
-            builtin_runner::KECCAK_BUILTIN_NAME => Ok(BuiltinName::keccak),
-            builtin_runner::BITWISE_BUILTIN_NAME => Ok(BuiltinName::bitwise),
-            builtin_runner::EC_OP_BUILTIN_NAME => Ok(BuiltinName::ec_op),
-            builtin_runner::POSEIDON_BUILTIN_NAME => Ok(BuiltinName::poseidon),
-            builtin_runner::SEGMENT_ARENA_BUILTIN_NAME => Ok(BuiltinName::segment_arena),
-            s => Err(TransactionError::InvalidBuiltinContractClass(s.to_string())),
+        .map(|n| {
+            BuiltinName::from_str(n)
+                .ok_or_else(|| TransactionError::InvalidBuiltinContractClass(n.to_string()))
         })
         .collect()
 }

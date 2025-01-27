@@ -1,8 +1,8 @@
 // This module tests our code against the blockifier to ensure they work in the same way.
 use assert_matches::assert_matches;
-use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
+use cairo_lang_starknet_classes::contract_class::ContractClass as SierraContractClass;
 use cairo_vm::{
-    vm::runners::builtin_runner::{HASH_BUILTIN_NAME, RANGE_CHECK_BUILTIN_NAME},
+    types::builtin_name::BuiltinName,
     vm::{
         errors::{
             cairo_run_errors::CairoRunError, vm_errors::VirtualMachineError,
@@ -501,8 +501,8 @@ fn expected_fee_transfer_call_info(
             n_steps: 529,
             n_memory_holes: 57,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 21),
-                (HASH_BUILTIN_NAME.to_string(), 4),
+                (BuiltinName::range_check, 21),
+                (BuiltinName::keccak, 4),
             ]),
         }),
         ..Default::default()
@@ -662,8 +662,8 @@ fn expected_fee_transfer_info(fee: u128) -> CallInfo {
             n_steps: 525,
             n_memory_holes: 59,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 21),
-                (HASH_BUILTIN_NAME.to_string(), 4),
+                (BuiltinName::range_check, 21),
+                (BuiltinName::keccak, 4),
             ]),
         }),
         l2_to_l1_messages: vec![],
@@ -738,8 +738,8 @@ fn expected_fib_fee_transfer_info(fee: u128) -> CallInfo {
             n_steps: 525,
             n_memory_holes: 59,
             builtin_instance_counter: HashMap::from([
-                ("range_check_builtin".to_string(), 21),
-                ("pedersen_builtin".to_string(), 4),
+                (BuiltinName::range_check, 21),
+                (BuiltinName::pedersen, 4),
             ]),
         }),
         l2_to_l1_messages: vec![],
@@ -821,7 +821,8 @@ fn declarev2_tx() -> Declare {
     let sierra_contract_class: SierraContractClass = serde_json::from_slice(program_data).unwrap();
     let sierra_class_hash = compute_sierra_class_hash(&sierra_contract_class).unwrap();
     let casm_class =
-        CasmContractClass::from_contract_class(sierra_contract_class.clone(), true).unwrap();
+        CasmContractClass::from_contract_class(sierra_contract_class.clone(), true, usize::MAX)
+            .unwrap();
     let casm_class_hash = compute_casm_class_hash(&casm_class).unwrap();
 
     Declare {
@@ -846,7 +847,8 @@ fn declarev2_tx() -> Declare {
 fn deploy_fib_syscall() -> Deploy {
     let program_data = include_bytes!("../../starknet_programs/cairo2/fibonacci.sierra");
     let sierra_contract_class: SierraContractClass = serde_json::from_slice(program_data).unwrap();
-    let casm_class = CasmContractClass::from_contract_class(sierra_contract_class, true).unwrap();
+    let casm_class =
+        CasmContractClass::from_contract_class(sierra_contract_class, true, usize::MAX).unwrap();
     let contract_class = CompiledClass::Casm {
         casm: Arc::new(casm_class),
         sierra: None,
@@ -933,8 +935,8 @@ fn expected_declare_fee_transfer_info(fee: u128) -> CallInfo {
             n_steps: 525,
             n_memory_holes: 59,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 21),
-                (HASH_BUILTIN_NAME.to_string(), 4),
+                (BuiltinName::range_check, 21),
+                (BuiltinName::keccak, 4),
             ]),
         }),
         ..Default::default()
@@ -1005,7 +1007,7 @@ fn test_declare_tx() {
 
     let resources = HashMap::from([
         ("n_steps".to_string(), 2921),
-        ("range_check_builtin".to_string(), 63),
+        (BuiltinName::range_check.to_str().to_string(), 63),
         ("pedersen_builtin".to_string(), 15),
         ("l1_gas_usage".to_string(), 1652),
     ]);
@@ -1104,7 +1106,7 @@ fn test_declarev2_tx() {
 
     let resources = HashMap::from([
         ("n_steps".to_string(), 2921),
-        ("range_check_builtin".to_string(), 63),
+        (BuiltinName::range_check.to_str().to_string(), 63),
         ("pedersen_builtin".to_string(), 15),
         ("l1_gas_usage".to_string(), 2754),
     ]);
@@ -1182,7 +1184,7 @@ fn expected_execute_call_info() -> CallInfo {
         execution_resources: Some(ExecutionResources {
             n_steps: 61,
             n_memory_holes: 0,
-            builtin_instance_counter: HashMap::from([(RANGE_CHECK_BUILTIN_NAME.to_string(), 1)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 1)]),
         }),
         ..Default::default()
     }
@@ -1209,7 +1211,7 @@ fn expected_fib_execute_call_info() -> CallInfo {
         execution_resources: Some(ExecutionResources {
             n_steps: 148,
             n_memory_holes: 0,
-            builtin_instance_counter: HashMap::from([("range_check_builtin".to_string(), 4)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 4)]),
         }),
         l2_to_l1_messages: vec![],
         internal_calls: vec![CallInfo {
@@ -1229,7 +1231,7 @@ fn expected_fib_execute_call_info() -> CallInfo {
             execution_resources: Some(ExecutionResources {
                 n_steps: 109,
                 n_memory_holes: 0,
-                builtin_instance_counter: HashMap::from([("range_check_builtin".to_string(), 3)]),
+                builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 3)]),
             }),
             ..Default::default()
         }],
@@ -1256,7 +1258,7 @@ fn expected_validate_call_info_2() -> CallInfo {
         execution_resources: Some(ExecutionResources {
             n_steps: 21,
             n_memory_holes: 0,
-            builtin_instance_counter: HashMap::from([(RANGE_CHECK_BUILTIN_NAME.to_string(), 1)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 1)]),
         }),
         ..Default::default()
     }
@@ -1281,7 +1283,7 @@ fn expected_fib_validate_call_info_2() -> CallInfo {
         execution_resources: Some(ExecutionResources {
             n_steps: 21,
             n_memory_holes: 0,
-            builtin_instance_counter: HashMap::from([("range_check_builtin".to_string(), 1)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 1)]),
         }),
         ..Default::default()
     }
@@ -1292,7 +1294,7 @@ fn expected_transaction_execution_info(block_context: &BlockContext) -> Transact
         ("n_steps".to_string(), 4463),
         ("pedersen_builtin".to_string(), 16),
         ("l1_gas_usage".to_string(), 1652),
-        ("range_check_builtin".to_string(), 102),
+        (BuiltinName::range_check.to_str().to_string(), 102),
     ]);
     let fee = calculate_tx_fee(&resources, block_context, &FeeType::Eth).unwrap();
     TransactionExecutionInfo::new(
@@ -1314,7 +1316,7 @@ fn expected_fib_transaction_execution_info(
         ("n_steps".to_string(), n_steps),
         ("l1_gas_usage".to_string(), 5197),
         ("pedersen_builtin".to_string(), 16),
-        ("range_check_builtin".to_string(), 105),
+        (BuiltinName::range_check.to_str().to_string(), 105),
     ]);
     let fee = calculate_tx_fee(&resources, block_context, &FeeType::Eth).unwrap();
     TransactionExecutionInfo::new(
@@ -1677,7 +1679,7 @@ fn test_deploy_account() {
 
     let resources = HashMap::from([
         ("n_steps".to_string(), 3893),
-        ("range_check_builtin".to_string(), 83),
+        (BuiltinName::range_check.to_str().to_string(), 83),
         ("pedersen_builtin".to_string(), 23),
         ("l1_gas_usage".to_string(), 2203),
     ]);
@@ -2226,7 +2228,7 @@ fn test_library_call_with_declare_v2() {
     let program_data = include_bytes!("../../starknet_programs/cairo2/fibonacci_dispatcher.casm");
     let contract_class: CasmContractClass = serde_json::from_slice(program_data).unwrap();
     let entrypoints = contract_class.clone().entry_points_by_type;
-    let external_entrypoint_selector = &entrypoints.external.get(0).unwrap().selector;
+    let external_entrypoint_selector = &entrypoints.external.first().unwrap().selector;
 
     let address = Address(6666.into());
     let mut class_hash: ClassHash = ClassHash([0; 32]);
@@ -2253,7 +2255,7 @@ fn test_library_call_with_declare_v2() {
         )
         .unwrap();
 
-    let create_execute_extrypoint = |selector: &BigUint,
+    let create_execute_entrypoint = |selector: &BigUint,
                                      calldata: Vec<Felt252>,
                                      entry_point_type: EntryPointType|
      -> ExecutionEntryPoint {
@@ -2277,7 +2279,7 @@ fn test_library_call_with_declare_v2() {
         1.into(),
         10.into(),
     ];
-    let send_message_exec_entry_point = create_execute_extrypoint(
+    let send_message_exec_entry_point = create_execute_entrypoint(
         external_entrypoint_selector,
         calldata.clone(),
         EntryPointType::External,
@@ -2323,7 +2325,7 @@ fn test_library_call_with_declare_v2() {
         execution_resources: Some(ExecutionResources {
             n_steps: 269,
             n_memory_holes: 0,
-            builtin_instance_counter: HashMap::from([("range_check_builtin".to_string(), 13)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 13)]),
         }),
         ..Default::default()
     };
@@ -2341,7 +2343,7 @@ fn test_library_call_with_declare_v2() {
         execution_resources: Some(ExecutionResources {
             n_steps: 463,
             n_memory_holes: 1,
-            builtin_instance_counter: HashMap::from([("range_check_builtin".to_string(), 16)]),
+            builtin_instance_counter: HashMap::from([(BuiltinName::range_check, 16)]),
         }),
         internal_calls: vec![expected_internal_call_info],
         ..Default::default()

@@ -238,7 +238,7 @@ impl Transaction {
         }
     }
 
-    /// It creates a new transaction structure modificating the skip flags. It is meant to be used only to run a simulation
+    /// It creates a new transaction structure modifying the skip flags. It is meant to be used only to run a simulation
     ///## Parameters:
     ///- skip_validate: the transaction will not be verified.
     ///- skip_execute: the transaction will not be executed in the cairo vm.

@@ -1,11 +1,7 @@
 use crate::integration_tests::complex_contracts::utils::get_accessed_keys;
 use crate::integration_tests::complex_contracts::utils::*;
 use cairo_vm::{
-    vm::runners::{
-        builtin_runner::{HASH_BUILTIN_NAME, RANGE_CHECK_BUILTIN_NAME},
-        cairo_runner::ExecutionResources,
-    },
-    Felt252,
+    types::builtin_name::BuiltinName, vm::runners::cairo_runner::ExecutionResources, Felt252,
 };
 
 use starknet_in_rust::{
@@ -100,8 +96,8 @@ fn amm_init_pool_test() {
             n_steps: 232,
             n_memory_holes: 20,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 14),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 14),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -189,8 +185,8 @@ fn amm_add_demo_tokens_test() {
             n_steps: 393,
             n_memory_holes: 44,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 20),
-                (HASH_BUILTIN_NAME.to_string(), 8),
+                (BuiltinName::range_check, 20),
+                (BuiltinName::keccak, 8),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -263,8 +259,8 @@ fn amm_get_pool_token_balance() {
             n_steps: 84,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 3),
-                (HASH_BUILTIN_NAME.to_string(), 1),
+                (BuiltinName::range_check, 3),
+                (BuiltinName::keccak, 1),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -358,8 +354,8 @@ fn amm_swap_test() {
             n_steps: 820,
             n_memory_holes: 95,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 41),
-                (HASH_BUILTIN_NAME.to_string(), 14),
+                (BuiltinName::range_check, 41),
+                (BuiltinName::keccak, 14),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -612,8 +608,8 @@ fn amm_get_account_token_balance_test() {
             n_steps: 92,
             n_memory_holes: 11,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 3),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 3),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         class_hash: Some(class_hash),

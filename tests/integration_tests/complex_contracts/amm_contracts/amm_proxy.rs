@@ -1,5 +1,7 @@
 use crate::integration_tests::complex_contracts::utils::*;
-use cairo_vm::{vm::runners::cairo_runner::ExecutionResources, Felt252};
+use cairo_vm::{
+    types::builtin_name::BuiltinName, vm::runners::cairo_runner::ExecutionResources, Felt252,
+};
 
 use starknet_crypto::FieldElement;
 use starknet_in_rust::{
@@ -87,8 +89,8 @@ fn amm_proxy_init_pool_test() {
             n_steps: 232,
             n_memory_holes: 20,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 2),
-                ("range_check_builtin".to_string(), 14),
+                (BuiltinName::pedersen, 2),
+                (BuiltinName::range_check, 14),
             ]),
         }),
         class_hash: Some(contract_class_hash),
@@ -109,8 +111,8 @@ fn amm_proxy_init_pool_test() {
             n_steps: 280,
             n_memory_holes: 20,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 2),
-                ("range_check_builtin".to_string(), 14),
+                (BuiltinName::pedersen, 2),
+                (BuiltinName::range_check, 14),
             ]),
         }),
         class_hash: Some(proxy_class_hash),
@@ -195,8 +197,8 @@ fn amm_proxy_get_pool_token_balance_test() {
             n_steps: 84,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 1),
-                ("range_check_builtin".to_string(), 3),
+                (BuiltinName::pedersen, 1),
+                (BuiltinName::range_check, 3),
             ]),
         }),
         class_hash: Some(contract_class_hash),
@@ -216,8 +218,8 @@ fn amm_proxy_get_pool_token_balance_test() {
             n_steps: 140,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 1),
-                ("range_check_builtin".to_string(), 3),
+                (BuiltinName::pedersen, 1),
+                (BuiltinName::range_check, 3),
             ]),
         }),
         class_hash: Some(proxy_class_hash),
@@ -309,8 +311,8 @@ fn amm_proxy_add_demo_token_test() {
             n_steps: 397,
             n_memory_holes: 42,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 8),
-                ("range_check_builtin".to_string(), 20),
+                (BuiltinName::pedersen, 8),
+                (BuiltinName::range_check, 20),
             ]),
         }),
         class_hash: Some(contract_class_hash),
@@ -329,8 +331,8 @@ fn amm_proxy_add_demo_token_test() {
             n_steps: 445,
             n_memory_holes: 42,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 8),
-                ("range_check_builtin".to_string(), 20),
+                (BuiltinName::pedersen, 8),
+                (BuiltinName::range_check, 20),
             ]),
         }),
         class_hash: Some(proxy_class_hash),
@@ -429,8 +431,8 @@ fn amm_proxy_get_account_token_balance() {
             n_steps: 92,
             n_memory_holes: 11,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 2),
-                ("range_check_builtin".to_string(), 3),
+                (BuiltinName::pedersen, 2),
+                (BuiltinName::range_check, 3),
             ]),
         }),
         class_hash: Some(contract_class_hash),
@@ -450,8 +452,8 @@ fn amm_proxy_get_account_token_balance() {
             n_steps: 151,
             n_memory_holes: 11,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 2),
-                ("range_check_builtin".to_string(), 3),
+                (BuiltinName::pedersen, 2),
+                (BuiltinName::range_check, 3),
             ]),
         }),
         class_hash: Some(proxy_class_hash),
@@ -572,8 +574,8 @@ fn amm_proxy_swap() {
             n_steps: 826,
             n_memory_holes: 92,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 14),
-                ("range_check_builtin".to_string(), 41),
+                (BuiltinName::pedersen, 14),
+                (BuiltinName::range_check, 41),
             ]),
         }),
         class_hash: Some(contract_class_hash),
@@ -593,8 +595,8 @@ fn amm_proxy_swap() {
             n_steps: 885,
             n_memory_holes: 92,
             builtin_instance_counter: HashMap::from([
-                ("pedersen_builtin".to_string(), 14),
-                ("range_check_builtin".to_string(), 41),
+                (BuiltinName::pedersen, 14),
+                (BuiltinName::range_check, 41),
             ]),
         }),
         class_hash: Some(proxy_class_hash),

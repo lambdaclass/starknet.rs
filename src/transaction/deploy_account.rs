@@ -512,7 +512,7 @@ impl DeployAccount {
             // return `VALID`.
             if !call_info
                 .as_ref()
-                .map(|ci| ci.retdata == vec![*VALIDATE_RETDATA])
+                .map(|ci| dbg!(&ci.retdata) == &vec![*VALIDATE_RETDATA])
                 .unwrap_or_default()
             {
                 return Err(TransactionError::WrongValidateRetdata);

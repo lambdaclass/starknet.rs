@@ -1,12 +1,10 @@
 use crate::{core::errors::contract_address_errors::ContractAddressError, EntryPointType};
-use cairo_lang_starknet::{
-    contract::starknet_keccak,
+use cairo_lang_starknet_classes::{
     contract_class::{ContractClass as SierraContractClass, ContractEntryPoint},
+    keccak::starknet_keccak,
 };
 use cairo_vm::Felt252;
-use serde_json::ser::Formatter;
 use starknet_crypto::{poseidon_hash_many, FieldElement, PoseidonHasher};
-use std::io::{self};
 
 const CONTRACT_CLASS_VERSION: &[u8] = b"CONTRACT_CLASS_V0.1.0";
 
@@ -142,7 +140,7 @@ fn get_contract_entry_points(
 #[cfg(test)]
 mod tests {
     use crate::core::contract_address::compute_sierra_class_hash;
-    use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
+    use cairo_lang_starknet_classes::contract_class::ContractClass as SierraContractClass;
     use cairo_vm::Felt252;
     use std::{fs::File, io::BufReader};
 
@@ -165,58 +163,5 @@ mod tests {
             compute_sierra_class_hash(&sierra_contract_class).unwrap(),
             expected_result
         )
-    }
-}
-
-struct PythonJsonFormatter;
-
-impl Formatter for PythonJsonFormatter {
-    fn begin_array_value<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
-    where
-        W: ?Sized + io::Write,
-    {
-        if first {
-            Ok(())
-        } else {
-            writer.write_all(b", ")
-        }
-    }
-
-    fn begin_object_key<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
-    where
-        W: ?Sized + io::Write,
-    {
-        if first {
-            Ok(())
-        } else {
-            writer.write_all(b", ")
-        }
-    }
-
-    fn begin_object_value<W>(&mut self, writer: &mut W) -> io::Result<()>
-    where
-        W: ?Sized + io::Write,
-    {
-        writer.write_all(b": ")
-    }
-
-    fn write_string_fragment<W>(&mut self, writer: &mut W, fragment: &str) -> io::Result<()>
-    where
-        W: ?Sized + io::Write,
-    {
-        let mut buf = [0, 0];
-
-        for c in fragment.chars() {
-            if c.is_ascii() {
-                writer.write_all(&[c as u8])?;
-            } else {
-                let buf = c.encode_utf16(&mut buf);
-                for i in buf {
-                    write!(writer, r"\u{i:04x}")?;
-                }
-            }
-        }
-
-        Ok(())
     }
 }

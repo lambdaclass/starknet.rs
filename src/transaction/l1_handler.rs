@@ -270,7 +270,9 @@ mod test {
         sync::Arc,
     };
 
-    use cairo_vm::{vm::runners::cairo_runner::ExecutionResources, Felt252};
+    use cairo_vm::{
+        types::builtin_name::BuiltinName, vm::runners::cairo_runner::ExecutionResources, Felt252,
+    };
 
     /// Test the correct execution of the L1Handler.
     #[test]
@@ -363,8 +365,8 @@ mod test {
                     n_steps: 141,
                     n_memory_holes: 20,
                     builtin_instance_counter: HashMap::from([
-                        ("range_check_builtin".to_string(), 6),
-                        ("pedersen_builtin".to_string(), 2),
+                        (BuiltinName::range_check, 6),
+                        (BuiltinName::pedersen, 2),
                     ]),
                 }),
                 events: vec![],

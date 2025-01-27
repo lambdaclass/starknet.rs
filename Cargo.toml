@@ -15,66 +15,71 @@ replay_benchmark = []
 
 [workspace]
 members = [
-    "fuzzer",
-    "rpc_state_reader",
-    "replay",
-    "examples/contract_execution",
+  "fuzzer",
+  "rpc_state_reader",
+  "replay",
+  "examples/contract_execution",
 ]
 
 [workspace.dependencies]
-cairo-lang-casm = "=2.5.4"
-cairo-lang-sierra = "=2.5.4"
-cairo-lang-starknet = "=2.5.4"
-cairo-lang-utils = "=2.5.4"
-cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "3547089579dd74f815edbc2d1caa91e00fc8a2f7", features = ["cairo-1-hints"] }
+cairo-lang-casm = "2.6.3"
+cairo-lang-sierra = "2.6.3"
+cairo-lang-starknet = "2.6.3"
+cairo-lang-utils = "2.6.3"
+cairo-lang-starknet-classes = "2.6.3"
+cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "c65591e9c0cc9bcc59a41c14c0be1ff34332adc8", features = [
+  "cairo-1-hints",
+] }
 num-traits = "0.2.15"
-starknet = "0.7.0" # todo: update to 0.9.0+ once cairo-lang is 2.6.0+
-starknet_api = "0.7.0-dev.0" # todo: update to 0.9.0+ once cairo-lang is 2.6.0+
-thiserror = "1.0.32"
+starknet = "0.10.0"
+starknet_api = "0.11.0"
+thiserror = "1.0.58"
 
 [dependencies]
 anyhow = "1.0"
-base64 = { version = "0.21.0", default-features = false, features = ["alloc"] }
+base64 = { version = "0.22.1", default-features = false, features = ["alloc"] }
 cairo-lang-casm = { workspace = true }
 cairo-lang-sierra = { workspace = true }
 cairo-lang-starknet = { workspace = true }
 cairo-lang-utils = { workspace = true }
-cairo-native = { git = "https://github.com/lambdaclass/cairo_native", rev = "baf57d2dde0036ac4848fc40c672826fb7ffcde4", optional = true }
+cairo-lang-starknet-classes = { workspace = true }
+cairo-native = { git = "https://github.com/lambdaclass/cairo_native", rev = "e90c4ce0a7d5cea856c6b0c4e7e8a04078de323b", optional = true }
 k256 = "0.13.3"
 p256 = "0.13.2"
 sec1 = "0.7.3"
 
 cairo-vm = { workspace = true }
-flate2 = "1.0.25"
+flate2 = "1.0.30"
 getset = "0.1.2"
 hex = "0.4.3"
 # TODO: Replace with sha3. We should look how to integrate it correctly to calculate sn_keccak
-keccak = "0.1.3"
+keccak = "0.1.5"
 lazy_static = "1.4.0"
-mimalloc = { version = "0.1.29", default-features = false, optional = true }
-num-bigint = { version = "0.4", features = ["serde"] }
-num-integer = "0.1.45"
+mimalloc = { version = "0.1.42", default-features = false, optional = true }
+num-bigint = { version = "0.4.5", features = ["serde"] }
+num-integer = "0.1.46"
 num-traits = { workspace = true }
-once_cell = "1.17.1"
-sha3 = "0.10.1"
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = { version = "1.0", features = [
-    "arbitrary_precision",
-    "raw_value",
+once_cell = "1.19.0"
+sha3 = "0.10.8"
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = { version = "1.0.117", features = [
+  "arbitrary_precision",
+  "raw_value",
 ] }
 serde_json_pythonic = "0.1.2"
 starknet = { workspace = true }
 starknet_api = { workspace = true }
-starknet-crypto = "0.6.1"
+starknet-crypto = "0.6.2"
 thiserror = { workspace = true }
-tracing = "0.1.37"
+tracing = "0.1.40"
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-coverage-helper = "0.2.0"
-lru = "0.11.0"
+coverage-helper = "0.2.2"
+lru = "0.12.3"
 pretty_assertions_sorted = "1.2.3"
-tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth.git", tag = "v0.2.0-beta.6", default-features = false }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 [[bench]]
 path = "bench/internals.rs"

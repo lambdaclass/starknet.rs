@@ -9,9 +9,9 @@ use crate::{ContractEntryPoint, EntryPointType};
 
 use super::deprecated_contract_class::ContractClass;
 use cairo_lang_sierra::program::Program as SierraProgram;
-use cairo_lang_starknet::abi::Contract;
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
-use cairo_lang_starknet::contract_class::{
+use cairo_lang_starknet_classes::abi::Contract;
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::contract_class::{
     ContractClass as SierraContractClass, ContractEntryPoints,
 };
 use cairo_lang_utils::bigint::BigUintAsHex;
@@ -87,7 +87,8 @@ impl From<StarknetRsContractClass> for CompiledClass {
                     sierra_cc.extract_sierra_program().unwrap(),
                     sierra_cc.entry_points_by_type.clone(),
                 ));
-                let casm_cc = CasmContractClass::from_contract_class(sierra_cc, true).unwrap();
+                let casm_cc =
+                    CasmContractClass::from_contract_class(sierra_cc, true, usize::MAX).unwrap(); // todo: check if usize::MAX is good here
 
                 CompiledClass::Casm {
                     casm: Arc::new(casm_cc),

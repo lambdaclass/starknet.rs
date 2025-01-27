@@ -153,7 +153,8 @@ fn test_contract(
     let sierra_contract_class: SierraContractClass =
         serde_json::from_reader(reader).expect("Could not load contract from JSON");
     let casm_class =
-        CasmContractClass::from_contract_class(sierra_contract_class.clone(), false).unwrap();
+        CasmContractClass::from_contract_class(sierra_contract_class.clone(), false, usize::MAX)
+            .unwrap();
     let compiled_class_hash =
         compute_casm_class_hash(&casm_class).expect("Error computing sierra class hash");
     //* --------------------------------------------

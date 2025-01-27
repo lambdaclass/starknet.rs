@@ -492,7 +492,7 @@ mod tests {
         let event = syscall_handler
             .syscall_handler
             .events
-            .get(0)
+            .first()
             .unwrap()
             .clone();
 

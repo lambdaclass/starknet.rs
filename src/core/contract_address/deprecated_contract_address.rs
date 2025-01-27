@@ -326,11 +326,7 @@ pub fn compute_deprecated_class_hash(
 
     for builtin_name in contract_class.program().iter_builtins() {
         builtin_list_vec.push(Felt252::from_bytes_be_slice(
-            builtin_name
-                .name()
-                .strip_suffix("_builtin")
-                .ok_or(ContractAddressError::BuiltinSuffix)?
-                .as_bytes(),
+            builtin_name.to_str().as_bytes(),
         ));
     }
 

@@ -97,7 +97,7 @@ fn bench_fibo(executions: usize, bench_type: BenchType) {
     let (contract_class, constructor_selector) = match bench_type {
         BenchType::VM => {
             let entrypoints = casm_contract_class.clone().entry_points_by_type;
-            let constructor_selector = entrypoints.external.get(0).unwrap().selector.clone();
+            let constructor_selector = entrypoints.external.first().unwrap().selector.clone();
 
             (
                 CompiledClass::Casm {
@@ -109,11 +109,11 @@ fn bench_fibo(executions: usize, bench_type: BenchType) {
         }
         _ => {
             let sierra_data = include_bytes!("../../starknet_programs/cairo2/fibonacci.sierra");
-            let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+            let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
                 serde_json::from_slice(sierra_data).unwrap();
 
             let entrypoints = sierra_contract_class.clone().entry_points_by_type;
-            let constructor_selector = entrypoints.external.get(0).unwrap().selector.clone();
+            let constructor_selector = entrypoints.external.first().unwrap().selector.clone();
             let sierra_program = sierra_contract_class.extract_sierra_program().unwrap();
             let entrypoints = sierra_contract_class.entry_points_by_type;
             (
@@ -183,7 +183,7 @@ fn bench_fact(executions: usize, bench_type: BenchType) {
     let (contract_class, constructor_selector) = match bench_type {
         BenchType::VM => {
             let entrypoints = casm_contract_class.clone().entry_points_by_type;
-            let constructor_selector = entrypoints.external.get(0).unwrap().selector.clone();
+            let constructor_selector = entrypoints.external.first().unwrap().selector.clone();
 
             (
                 CompiledClass::Casm {
@@ -195,11 +195,11 @@ fn bench_fact(executions: usize, bench_type: BenchType) {
         }
         _ => {
             let sierra_data = include_bytes!("../../starknet_programs/cairo2/factorial_tr.sierra");
-            let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+            let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
                 serde_json::from_slice(sierra_data).unwrap();
 
             let entrypoints = sierra_contract_class.clone().entry_points_by_type;
-            let constructor_selector = entrypoints.external.get(0).unwrap().selector.clone();
+            let constructor_selector = entrypoints.external.first().unwrap().selector.clone();
             let sierra_program = sierra_contract_class.extract_sierra_program().unwrap();
             let entrypoints = sierra_contract_class.entry_points_by_type;
             (
@@ -318,7 +318,7 @@ fn bench_erc20(executions: usize, bench_type: BenchType) {
             };
 
             let entrypoints = erc20_deployer_class.clone().entry_points_by_type;
-            let deploy_entrypoint_selector = &entrypoints.external.get(0).unwrap().selector;
+            let deploy_entrypoint_selector = &entrypoints.external.first().unwrap().selector;
 
             // insert deployer and erc20 classes into the cache.
             contract_class_cache.set_contract_class(
@@ -383,13 +383,13 @@ fn bench_erc20(executions: usize, bench_type: BenchType) {
                 .unwrap();
 
             // obtain the address of the deployed erc20 contract
-            let erc20_address = *call_info.call_info.unwrap().retdata.get(0).unwrap();
+            let erc20_address = *call_info.call_info.unwrap().retdata.first().unwrap();
 
             (Address(erc20_address), state)
         }
         _ => {
             let erc20_sierra_class = include_bytes!("../../starknet_programs/cairo2/erc20.sierra");
-            let sierra_contract_class: cairo_lang_starknet::contract_class::ContractClass =
+            let sierra_contract_class: cairo_lang_starknet_classes::contract_class::ContractClass =
                 serde_json::from_slice(erc20_sierra_class).unwrap();
             let sierra_program = sierra_contract_class.extract_sierra_program().unwrap();
             let entrypoints = sierra_contract_class.entry_points_by_type;
@@ -399,7 +399,7 @@ fn bench_erc20(executions: usize, bench_type: BenchType) {
             };
 
             let entrypoints = erc20_deployer_class.clone().entry_points_by_type;
-            let deploy_entrypoint_selector = &entrypoints.external.get(0).unwrap().selector;
+            let deploy_entrypoint_selector = &entrypoints.external.first().unwrap().selector;
 
             // insert deployer and erc20 classes into the cache.
             contract_class_cache.set_contract_class(
@@ -464,7 +464,7 @@ fn bench_erc20(executions: usize, bench_type: BenchType) {
                 .unwrap();
 
             // obtain the address of the deployed erc20 contract
-            let erc20_address = *call_info.call_info.unwrap().retdata.get(0).unwrap();
+            let erc20_address = *call_info.call_info.unwrap().retdata.first().unwrap();
 
             (Address(erc20_address), state)
         }

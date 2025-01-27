@@ -1,11 +1,7 @@
 use crate::integration_tests::complex_contracts::utils::*;
 use assert_matches::assert_matches;
 use cairo_vm::{
-    vm::runners::{
-        builtin_runner::{HASH_BUILTIN_NAME, RANGE_CHECK_BUILTIN_NAME},
-        cairo_runner::ExecutionResources,
-    },
-    Felt252,
+    types::builtin_name::BuiltinName, vm::runners::cairo_runner::ExecutionResources, Felt252,
 };
 
 use starknet_crypto::FieldElement;
@@ -150,8 +146,8 @@ fn erc721_balance_of_test() {
             n_steps: 105,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 3),
-                (HASH_BUILTIN_NAME.to_string(), 1),
+                (BuiltinName::range_check, 3),
+                (BuiltinName::keccak, 1),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -232,8 +228,8 @@ fn erc721_test_owner_of() {
             n_steps: 116,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 5),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 5),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -331,8 +327,8 @@ fn erc721_test_get_approved() {
             n_steps: 192,
             n_memory_holes: 20,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 8),
-                (HASH_BUILTIN_NAME.to_string(), 4),
+                (BuiltinName::range_check, 8),
+                (BuiltinName::keccak, 4),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -433,8 +429,8 @@ fn erc721_test_is_approved_for_all() {
             n_steps: 101,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 3),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 3),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -536,8 +532,8 @@ fn erc721_test_approve() {
             n_steps: 332,
             n_memory_holes: 30,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 13),
-                (HASH_BUILTIN_NAME.to_string(), 6),
+                (BuiltinName::range_check, 13),
+                (BuiltinName::keccak, 6),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -634,8 +630,8 @@ fn erc721_set_approval_for_all() {
             n_steps: 154,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 3),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 3),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         class_hash: Some(class_hash),
@@ -784,8 +780,8 @@ fn erc721_transfer_from_test() {
             n_steps: 1131,
             n_memory_holes: 117,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 53),
-                (HASH_BUILTIN_NAME.to_string(), 16),
+                (BuiltinName::range_check, 53),
+                (BuiltinName::keccak, 16),
             ]),
         }),
         ..Default::default()
@@ -875,8 +871,8 @@ fn erc721_transfer_from_and_get_owner_test() {
             n_steps: 116,
             n_memory_holes: 10,
             builtin_instance_counter: HashMap::from([
-                (RANGE_CHECK_BUILTIN_NAME.to_string(), 5),
-                (HASH_BUILTIN_NAME.to_string(), 2),
+                (BuiltinName::range_check, 5),
+                (BuiltinName::keccak, 2),
             ]),
         }),
         ..Default::default()

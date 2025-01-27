@@ -304,9 +304,9 @@ impl FromPtr for EmitEventRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let keys_start = get_relocatable(vm, syscall_ptr)?;
-        let keys_end = get_relocatable(vm, &syscall_ptr + 1)?;
-        let data_start = get_relocatable(vm, &syscall_ptr + 2)?;
-        let data_end = get_relocatable(vm, &syscall_ptr + 3)?;
+        let keys_end = get_relocatable(vm, (syscall_ptr + 1)?)?;
+        let data_start = get_relocatable(vm, (syscall_ptr + 2)?)?;
+        let data_end = get_relocatable(vm, (syscall_ptr + 3)?)?;
 
         Ok(EmitEventRequest {
             keys_start,
@@ -324,7 +324,7 @@ impl FromPtr for StorageReadRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let reserved = get_big_int(vm, syscall_ptr)?;
-        let key = get_big_int(vm, &syscall_ptr + 1)?.to_bytes_be();
+        let key = get_big_int(vm, (syscall_ptr + 1)?)?.to_bytes_be();
         Ok(StorageReadRequest { key, reserved }.into())
     }
 }
@@ -356,9 +356,9 @@ impl FromPtr for CallContractRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let contract_address = Address(get_big_int(vm, syscall_ptr)?);
-        let selector = get_big_int(vm, &syscall_ptr + 1)?;
-        let calldata_start = get_relocatable(vm, &syscall_ptr + 2)?;
-        let calldata_end = get_relocatable(vm, &syscall_ptr + 3)?;
+        let selector = get_big_int(vm, (syscall_ptr + 1)?)?;
+        let calldata_start = get_relocatable(vm, (syscall_ptr + 2)?)?;
+        let calldata_end = get_relocatable(vm, (syscall_ptr + 3)?)?;
         Ok(CallContractRequest {
             selector,
             contract_address,
@@ -375,9 +375,9 @@ impl FromPtr for LibraryCallRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let class_hash = get_big_int(vm, syscall_ptr)?;
-        let selector = get_big_int(vm, &syscall_ptr + 1)?;
-        let calldata_start = get_relocatable(vm, &syscall_ptr + 2)?;
-        let calldata_end = get_relocatable(vm, &syscall_ptr + 3)?;
+        let selector = get_big_int(vm, (syscall_ptr + 1)?)?;
+        let calldata_start = get_relocatable(vm, (syscall_ptr + 2)?)?;
+        let calldata_end = get_relocatable(vm, (syscall_ptr + 3)?)?;
 
         Ok(LibraryCallRequest {
             class_hash,
@@ -395,8 +395,8 @@ impl FromPtr for SendMessageToL1Request {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let to_address = Address(get_big_int(vm, syscall_ptr)?);
-        let payload_start = get_relocatable(vm, &syscall_ptr + 1)?;
-        let payload_end = get_relocatable(vm, &syscall_ptr + 2)?;
+        let payload_start = get_relocatable(vm, (syscall_ptr + 1)?)?;
+        let payload_end = get_relocatable(vm, (syscall_ptr + 2)?)?;
 
         Ok(SendMessageToL1Request {
             to_address,
@@ -413,8 +413,8 @@ impl FromPtr for StorageWriteRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let reserved = get_big_int(vm, syscall_ptr)?;
-        let key = get_big_int(vm, &syscall_ptr + 1)?;
-        let value = get_big_int(vm, &syscall_ptr + 2)?;
+        let key = get_big_int(vm, (syscall_ptr + 1)?)?;
+        let value = get_big_int(vm, (syscall_ptr + 2)?)?;
 
         Ok(StorageWriteRequest {
             reserved,
@@ -431,7 +431,7 @@ impl FromPtr for KeccakRequest {
         syscall_ptr: Relocatable,
     ) -> Result<SyscallRequest, SyscallHandlerError> {
         let input_start = get_relocatable(vm, syscall_ptr)?;
-        let input_end = get_relocatable(vm, &syscall_ptr + 1)?;
+        let input_end = get_relocatable(vm, (syscall_ptr + 1)?)?;
 
         Ok(KeccakRequest {
             input_start,

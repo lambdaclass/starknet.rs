@@ -1,9 +1,9 @@
 use crate::core::contract_address::compute_hinted_class_hash;
 use crate::services::api::contract_class_errors::ContractClassError;
 use cairo_vm::serde::deserialize_program::{
-    deserialize_array_of_bigint_hex, Attribute, BuiltinName, HintParams, Identifier,
-    ReferenceManager,
+    deserialize_array_of_bigint_hex, Attribute, HintParams, Identifier, ReferenceManager,
 };
+use cairo_vm::types::builtin_name::BuiltinName;
 use cairo_vm::types::relocatable::MaybeRelocatable;
 use cairo_vm::types::{errors::program_errors::ProgramError, program::Program};
 use cairo_vm::utils::PRIME_STR;
@@ -262,7 +262,7 @@ mod tests {
     use crate::core::contract_address::compute_deprecated_class_hash;
 
     use super::*;
-    use cairo_vm::{serde::deserialize_program::BuiltinName, Felt252};
+    use cairo_vm::Felt252;
     use starknet_api::deprecated_contract_class::{FunctionAbiEntry, TypedParameter};
 
     #[test]

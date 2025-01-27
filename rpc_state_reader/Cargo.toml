@@ -15,7 +15,7 @@ serde_json = { version = "1.0", features = [
     "arbitrary_precision",
     "raw_value",
 ] }
-starknet_api = "0.7.0-dev.0"
+starknet_api = "0.11.0"
 cairo-lang-starknet = { workspace = true }
 cairo-lang-utils = { workspace = true }
 starknet = { workspace = true }

@@ -46,6 +46,10 @@ starknet-venv/
 
 starknet_programs/cairo2/*.casm
 starknet_programs/cairo2/*.sierra
+starknet_programs/cairo1/*.sierra
+starknet_programs/cairo1/*.casm
+starknet_programs/kakarot/*.casm
+starknet_programs/kakarot/*.sierra
 default.profraw
 **.DS_Store
 /scripts/reports
@@ -57,3 +61,4 @@ lcov.info
 !/starknet_programs/raw_contract_classes/*.json
 cairo-*.tar
 starknet-pypy-env/
+cairo1/
