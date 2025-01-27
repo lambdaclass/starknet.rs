@@ -433,7 +433,7 @@ impl ExecutionEntryPoint {
             );
 
         // fetch syscall_ptr
-        let initial_syscall_ptr: Relocatable = match os_context.get(0) {
+        let initial_syscall_ptr: Relocatable = match os_context.first() {
             Some(MaybeRelocatable::RelocatableValue(ptr)) => ptr.to_owned(),
             _ => return Err(TransactionError::NotARelocatableValue),
         };
@@ -687,10 +687,6 @@ impl ExecutionEntryPoint {
         class_hash: &ClassHash,
         program_cache: Rc<RefCell<ProgramCache<'_, ClassHash>>>,
     ) -> Result<CallInfo, TransactionError> {
-        use cairo_native::{
-            executor::NativeExecutor, metadata::syscall_handler::SyscallHandlerMeta,
-        };
-
         use crate::{
             syscalls::{
                 business_logic_syscall_handler::SYSCALL_BASE,
@@ -698,6 +694,7 @@ impl ExecutionEntryPoint {
             },
             utils::NATIVE_CONTEXT,
         };
+        use cairo_native::executor::NativeExecutor;
 
         // Ensure we're using the global context, if initialized.
         if let Some(native_context) = NATIVE_CONTEXT.get() {
@@ -757,8 +754,6 @@ impl ExecutionEntryPoint {
             resources_manager: Default::default(),
         };
 
-        let syscall_meta = SyscallHandlerMeta::new(&mut syscall_handler);
-
         let entry_point_fn = &sierra_program
             .funcs
             .iter()
@@ -772,13 +767,13 @@ impl ExecutionEntryPoint {
                 entry_point_id,
                 &self.calldata,
                 Some(self.initial_gas),
-                Some(&syscall_meta),
+                &mut syscall_handler,
             ),
             NativeExecutor::Jit(executor) => executor.invoke_contract_dynamic(
                 entry_point_id,
                 &self.calldata,
                 Some(self.initial_gas),
-                Some(&syscall_meta),
+                &mut syscall_handler,
             ),
         }
         .map_err(|e| TransactionError::CustomError(format!("cairo-native error: {:?}", e)))?;

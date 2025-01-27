@@ -350,7 +350,7 @@ mod test {
 
         let contract_class: CasmContractClass = serde_json::from_slice(program_data).unwrap();
         let entrypoints = contract_class.clone().entry_points_by_type;
-        let entrypoint_selector = Felt252::from(&entrypoints.external.get(0).unwrap().selector);
+        let entrypoint_selector = Felt252::from(&entrypoints.external.first().unwrap().selector);
 
         let contract_class_cache = PermanentContractClassCache::default();
 
@@ -454,7 +454,7 @@ mod test {
         let program_data = include_bytes!("../starknet_programs/cairo2/fibonacci.casm");
         let contract_class: CasmContractClass = serde_json::from_slice(program_data).unwrap();
         let entrypoints = contract_class.clone().entry_points_by_type;
-        let entrypoint_selector = Felt252::from(&entrypoints.external.get(0).unwrap().selector);
+        let entrypoint_selector = Felt252::from(&entrypoints.external.first().unwrap().selector);
 
         let contract_class_cache = PermanentContractClassCache::default();
 

@@ -53,7 +53,7 @@ fn main() {
     let fib_entrypoint_selector = *entry_points_by_type
         .get(&EntryPointType::External)
         .unwrap()
-        .get(0)
+        .first()
         .unwrap()
         .selector();
 

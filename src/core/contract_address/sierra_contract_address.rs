@@ -139,35 +139,6 @@ fn get_contract_entry_points(
     Ok(entry_points)
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::core::contract_address::compute_sierra_class_hash;
-    use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
-    use cairo_vm::Felt252;
-    use std::{fs::File, io::BufReader};
-
-    /// Test the correctness of the compute_sierra_class_hash function for a specific testnet contract.
-    #[test]
-    fn test_declare_tx_from_testnet() {
-        let file = File::open("starknet_programs/raw_contract_classes/0x113bf26d112a164297e04381212c9bd7409f07591f0a04f539bdf56693eaaf3.sierra").unwrap();
-        // 0x113bf26d112a164297e04381212c9bd7409f07591f0a04f539bdf56693eaaf3
-        let reader = BufReader::new(file);
-
-        let sierra_contract_class: SierraContractClass = serde_json::from_reader(reader).unwrap();
-
-        // this is the class_hash from: https://alpha4.starknet.io/feeder_gateway/get_transaction?transactionHash=0x01b852f1fe2b13db21a44f8884bc4b7760dc277bb3820b970dba929860275617
-        let expected_result = Felt252::from_dec_str(
-            "487202222862199115032202787294865701687663153957776561394399544814644144883",
-        )
-        .unwrap();
-
-        assert_eq!(
-            compute_sierra_class_hash(&sierra_contract_class).unwrap(),
-            expected_result
-        )
-    }
-}
-
 struct PythonJsonFormatter;
 
 impl Formatter for PythonJsonFormatter {
@@ -218,5 +189,34 @@ impl Formatter for PythonJsonFormatter {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::contract_address::compute_sierra_class_hash;
+    use cairo_lang_starknet::contract_class::ContractClass as SierraContractClass;
+    use cairo_vm::Felt252;
+    use std::{fs::File, io::BufReader};
+
+    /// Test the correctness of the compute_sierra_class_hash function for a specific testnet contract.
+    #[test]
+    fn test_declare_tx_from_testnet() {
+        let file = File::open("starknet_programs/raw_contract_classes/0x113bf26d112a164297e04381212c9bd7409f07591f0a04f539bdf56693eaaf3.sierra").unwrap();
+        // 0x113bf26d112a164297e04381212c9bd7409f07591f0a04f539bdf56693eaaf3
+        let reader = BufReader::new(file);
+
+        let sierra_contract_class: SierraContractClass = serde_json::from_reader(reader).unwrap();
+
+        // this is the class_hash from: https://alpha4.starknet.io/feeder_gateway/get_transaction?transactionHash=0x01b852f1fe2b13db21a44f8884bc4b7760dc277bb3820b970dba929860275617
+        let expected_result = Felt252::from_dec_str(
+            "487202222862199115032202787294865701687663153957776561394399544814644144883",
+        )
+        .unwrap();
+
+        assert_eq!(
+            compute_sierra_class_hash(&sierra_contract_class).unwrap(),
+            expected_result
+        )
     }
 }

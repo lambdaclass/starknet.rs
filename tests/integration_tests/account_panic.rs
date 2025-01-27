@@ -84,7 +84,7 @@ fn account_panic() {
     let selector_contract = &contract_class
         .entry_points_by_type
         .external
-        .get(0)
+        .first()
         .unwrap()
         .selector;
     // calldata of contract_a is 1 value.

@@ -2226,7 +2226,7 @@ fn test_library_call_with_declare_v2() {
     let program_data = include_bytes!("../../starknet_programs/cairo2/fibonacci_dispatcher.casm");
     let contract_class: CasmContractClass = serde_json::from_slice(program_data).unwrap();
     let entrypoints = contract_class.clone().entry_points_by_type;
-    let external_entrypoint_selector = &entrypoints.external.get(0).unwrap().selector;
+    let external_entrypoint_selector = &entrypoints.external.first().unwrap().selector;
 
     let address = Address(6666.into());
     let mut class_hash: ClassHash = ClassHash([0; 32]);

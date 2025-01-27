@@ -33,7 +33,7 @@ use cairo_native::{
     cache::ProgramCache,
     starknet::{
         BlockInfo, ExecutionInfo, ExecutionInfoV2, ResourceBounds, Secp256k1Point, Secp256r1Point,
-        StarkNetSyscallHandler, SyscallResult, TxInfo, TxV2Info, U256,
+        StarknetSyscallHandler, SyscallResult, TxInfo, TxV2Info, U256,
     },
 };
 use cairo_vm::Felt252;
@@ -85,8 +85,8 @@ impl<'a, 'cache, S: StateReader, C: ContractClassCache> NativeSyscallHandler<'a,
     }
 }
 
-impl<'a, 'cache, S: StateReader, C: ContractClassCache> StarkNetSyscallHandler
-    for NativeSyscallHandler<'a, 'cache, S, C>
+impl<'a, 'cache, S: StateReader, C: ContractClassCache> StarknetSyscallHandler
+    for &mut NativeSyscallHandler<'a, 'cache, S, C>
 {
     fn get_block_hash(
         &mut self,
@@ -1278,7 +1278,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256k1_new(
                 U256 {
                     hi: 0,
@@ -1304,7 +1304,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256k1_add(
                 Secp256k1Point {
                     x: U256 {
@@ -1342,7 +1342,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256k1_mul(
                 Secp256k1Point {
                     x: U256 {
@@ -1374,7 +1374,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256k1_get_point_from_x(
                 U256 {
                     hi: 0,
@@ -1397,7 +1397,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let (x, y) = syscall_handler
+        let (x, y) = (&mut syscall_handler)
             .secp256k1_get_xy(
                 Secp256k1Point {
                     x: U256 {
@@ -1424,7 +1424,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256r1_new(
                 U256 {
                     hi: 0,
@@ -1450,7 +1450,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256r1_add(
                 Secp256r1Point {
                     x: U256 {
@@ -1488,7 +1488,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256r1_mul(
                 Secp256r1Point {
                     x: U256 {
@@ -1520,7 +1520,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let p = syscall_handler
+        let p = (&mut syscall_handler)
             .secp256r1_get_point_from_x(
                 U256 {
                     hi: 0,
@@ -1543,7 +1543,7 @@ mod test {
         let mut syscall_handler = test_ctx.new_syscall_handler();
         let mut gas = 0;
 
-        let (x, y) = syscall_handler
+        let (x, y) = (&mut syscall_handler)
             .secp256r1_get_xy(
                 Secp256r1Point {
                     x: U256 {
