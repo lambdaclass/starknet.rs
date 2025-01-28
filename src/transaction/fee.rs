@@ -378,7 +378,7 @@ mod tests {
         );
         let mut tx_execution_context = TransactionExecutionContext::default();
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config.gas_price = GasPrices::new(1, 0);
+        block_context.block_info.gas_price = GasPrices::new(1, 0);
         let resources = HashMap::from([
             ("l1_gas_usage".to_string(), 200_usize),
             ("pedersen_builtin".to_string(), 10000_usize),
@@ -420,7 +420,7 @@ mod tests {
             ..Default::default()
         };
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config.gas_price = GasPrices::new(1, 0);
+        block_context.block_info.gas_price = GasPrices::new(1, 0);
         let resources = HashMap::from([
             ("l1_gas_usage".to_string(), 200_usize),
             ("pedersen_builtin".to_string(), 10000_usize),

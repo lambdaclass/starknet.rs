@@ -436,7 +436,7 @@ mod test {
         );
 
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config.gas_price = GasPrices::new(1, 0);
+        block_context.block_info_mut().gas_price = GasPrices::new(1, 0);
 
         let estimated_fee = estimate_message_fee(
             &l1_handler,
@@ -1060,7 +1060,7 @@ mod test {
             .unwrap();
 
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config.gas_price = GasPrices::new(1, 0);
+        block_context.block_info_mut().gas_price = GasPrices::new(1, 0);
 
         simulate_transaction(
             &[&l1_handler_tx],
@@ -1260,7 +1260,7 @@ mod test {
         declare.hash_value = Felt252::from_dec_str("2718").unwrap();
 
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config_mut().gas_price = GasPrices::new(12, 0);
+        block_context.block_info.gas_price = GasPrices::new(12, 0);
 
         let declare_tx = Transaction::DeclareDeprecated(declare);
 

@@ -180,11 +180,7 @@ pub fn execute_tx_configurable_with_state(
         RpcChain::TestNet => StarknetChainId::TestNet,
         RpcChain::TestNet2 => StarknetChainId::TestNet2,
     };
-    let starknet_os_config = StarknetOsConfig::new(
-        chain_id.to_felt(),
-        fee_token_address,
-        block_info.gas_price.clone(),
-    );
+    let starknet_os_config = StarknetOsConfig::new(chain_id.to_felt(), fee_token_address);
 
     // Get transaction before giving ownership of the reader
     let tx = match tx {

@@ -1219,7 +1219,7 @@ mod tests {
             .unwrap();
 
         let mut block_context = BlockContext::default();
-        block_context.starknet_os_config.gas_price = GasPrices::new(1, 0);
+        block_context.block_info.gas_price = GasPrices::new(1, 0);
 
         let tx_info = internal_invoke_function
             .execute(

@@ -681,14 +681,17 @@ pub mod test_utils {
             StarknetOsConfig::new(
                 StarknetChainId::TestNet.to_felt(),
                 TEST_FEE_TOKEN_ADDRESSES.clone(),
-                GasPrices::new(1, 1),
             ),
             0,
             0,
             DEFAULT_CAIRO_RESOURCE_FEE_WEIGHTS.clone(),
             1_000_000,
             0,
-            BlockInfo::empty(TEST_SEQUENCER_ADDRESS.clone()),
+            BlockInfo {
+                gas_price: GasPrices::new(1, 1),
+                sequencer_address: TEST_SEQUENCER_ADDRESS.clone(),
+                ..Default::default()
+            },
             HashMap::default(),
             true,
         )

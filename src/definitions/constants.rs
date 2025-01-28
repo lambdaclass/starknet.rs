@@ -51,7 +51,6 @@ lazy_static! {
                 "0x4c07059285c2607d528a4c5220ef1f64d8f01273c23cfd9dec68759f61b544"
             ).unwrap()),
         },
-        gas_price: crate::definitions::block_context::GasPrices::default(),
     };
 
 pub static ref DECLARE_VERSION: Felt252 = 2.into();

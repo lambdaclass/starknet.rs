@@ -72,9 +72,6 @@ pub struct StarknetOsConfig {
     /// Address of the token used when paying fees
     #[get = "pub"]
     pub(crate) fee_token_address: FeeTokenAddresses,
-    /// Price of gas
-    #[get = "pub"]
-    pub(crate) gas_price: GasPrices,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
@@ -135,15 +132,10 @@ impl StarknetOsConfig {
     /// * `chain_id` - [`Felt252`] of the configured chain.
     /// * `fee_token_address` - Address of the token used when paying fees.
     /// * `gas_price` - Price of gas.
-    pub const fn new(
-        chain_id: Felt252,
-        fee_token_address: FeeTokenAddresses,
-        gas_price: GasPrices,
-    ) -> Self {
+    pub const fn new(chain_id: Felt252, fee_token_address: FeeTokenAddresses) -> Self {
         StarknetOsConfig {
             chain_id,
             fee_token_address,
-            gas_price,
         }
     }
 }
@@ -218,7 +210,7 @@ impl BlockContext {
     }
 
     pub fn get_gas_price_by_fee_type(&self, fee_type: &FeeType) -> u128 {
-        self.starknet_os_config.gas_price.get_by_fee_type(fee_type)
+        self.block_info().gas_price.get_by_fee_type(fee_type)
     }
 
     pub fn get_fee_token_address_by_fee_type(&self, fee_type: &FeeType) -> &Address {

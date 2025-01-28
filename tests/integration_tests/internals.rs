@@ -118,7 +118,6 @@ pub fn new_starknet_block_context_for_testing() -> BlockContext {
         StarknetOsConfig::new(
             StarknetChainId::TestNet.to_felt(),
             TEST_FEE_TOKEN_ADDRESSES.clone(),
-            GAS_PRICES.clone(),
         ),
         0,
         0,
